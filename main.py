@@ -4,14 +4,12 @@ from trainer import SupervisedTrainer
 import torch
 
 # Get our model
-bert = SequenceBertModel(pretrained_model_name="distilbert-base-uncased")
+bert = SequenceBertModel(pretrained_model_name="distilbert-base-uncased", num_labels=2)
 
 # Gets our dataloaders
 train_dataloader, validation_dataloader, test_dataloader = get_dataloader('Datasets/IMDB_500.csv',
                                                                           splits=[0.7, 0.3, 0],
                                                                           batch_sizes=[32, 32, 32])
-
-
 
 # Initialize additional training parameters
 criterion = torch.nn.CrossEntropyLoss()
