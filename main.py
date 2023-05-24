@@ -4,7 +4,7 @@ from trainer import SupervisedTrainer
 import torch
 
 # Get our model
-bert = SequenceBertModel(pretrained_model_name="bert-base-uncased")
+bert = SequenceBertModel(pretrained_model_name="distilbert-base-uncased")
 
 # Gets our dataloaders
 train_dataloader, validation_dataloader, test_dataloader = get_dataloader('Datasets/IMDB_500.csv',
