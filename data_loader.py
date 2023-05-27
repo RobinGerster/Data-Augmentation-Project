@@ -5,7 +5,7 @@ import pandas as pd
 
 
 class TextClassificationDataset(Dataset):
-    def __init__(self, texts, labels):
+    def __init__(self, texts, labels=None):
         self.texts = texts
         self.labels = labels
 
@@ -14,9 +14,12 @@ class TextClassificationDataset(Dataset):
 
     def __getitem__(self, idx):
         text = self.texts[idx]
-        label = torch.tensor(self.labels[idx])
 
-        return text, label
+        if self.labels:
+            label = torch.tensor(self.labels[idx])
+            return text, label
+        else:
+            return text
 
 
 def get_dataloader(csv_path, splits=[1.0], batch_sizes=[16]):
