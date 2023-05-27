@@ -1,20 +1,19 @@
 import torch
 import torch.nn.functional as F
-import nlpaug.augmenter.word as naw
+from augment import synonym_aug
 
 
-class SupervisedTrainer:
-    def __init__(self, model, criterion, optimizer, train_dataloader, device="gpu", epochs=1, val_dataloader=None,
-                 max_length=512):  # Add max_length as a parameter
+class BaseTrainer:
+    def __init__(self, model, optimizer, train_dataloader, device="gpu", epochs=1, val_dataloader=None,
+                 max_length=512):
         self.tokenizer = model.tokenizer
         self.model = model.model.to(device)
-        self.criterion = criterion
         self.optimizer = optimizer
         self.train_dataloader = train_dataloader
         self.val_dataloader = val_dataloader
         self.device = device
         self.epochs = epochs
-        self.max_length = max_length  # Store the maximum length
+        self.max_length = max_length
 
     def train(self):
         self.model.train()
@@ -23,17 +22,12 @@ class SupervisedTrainer:
             total_loss = 0
             for batch in self.train_dataloader:
                 self.optimizer.zero_grad()
-
                 texts, labels = batch
-
-                # Batch encoding of texts with max_length parameter
+                labels = labels.to(self.device)
                 inputs = self.tokenizer(texts, padding=True, truncation=True, return_tensors='pt',
                                         max_length=self.max_length)
-
                 input_ids = inputs["input_ids"].to(self.device)
                 attention_mask = inputs["attention_mask"].to(self.device)
-                labels = labels.to(self.device)
-
                 outputs = self.model(input_ids, attention_mask=attention_mask)
                 loss = self.criterion(outputs.logits, labels)
                 total_loss += loss.item()
@@ -48,53 +42,36 @@ class SupervisedTrainer:
 
     def evaluate(self, dataloader):
         self.model.eval()
-
         total_correct = 0
         total_examples = 0
         with torch.no_grad():
             for batch in dataloader:
                 texts, labels = batch
-
-                # Batch encoding of texts with max_length parameter
                 inputs = self.tokenizer(texts, padding=True, truncation=True, return_tensors='pt',
                                         max_length=self.max_length)
-
                 input_ids = inputs["input_ids"].to(self.device)
                 attention_mask = inputs["attention_mask"].to(self.device)
                 labels = labels.to(self.device)
-
                 outputs = self.model(input_ids, attention_mask=attention_mask)
                 predictions = torch.argmax(outputs.logits, dim=-1)
-
                 correct = (predictions == labels).sum().item()
                 total_correct += correct
                 total_examples += labels.size(0)
-
         return total_correct / total_examples
 
 
-aug = naw.SynonymAug(aug_src='wordnet')
+class SupervisedTrainer(BaseTrainer):
+    def __init__(self, model, criterion, optimizer, train_dataloader, device="gpu", epochs=1, val_dataloader=None,
+                 max_length=512):
+        super().__init__(model, optimizer, train_dataloader, device, epochs, val_dataloader, max_length)
+        self.criterion = criterion
 
 
-def augment_text(text):
-    augmented_text = aug.augment(text)
-    augmented_text = ' '.join(augmented_text)  # Join the list of strings into a single string
-    return augmented_text
-
-
-class UDATrainer():
+class UDATrainer(BaseTrainer):
     def __init__(self, model, optimizer, supervised_dataloader, unsupervised_dataloader, device="gpu",
-                 epochs=1, val_dataloader=None,
-                 max_length=512):  # Add max_length as a parameter
-        self.tokenizer = model.tokenizer
-        self.model = model.model.to(device)
-        self.optimizer = optimizer
+                 epochs=1, val_dataloader=None, max_length=512):
+        super().__init__(model, optimizer, supervised_dataloader, device, epochs, val_dataloader, max_length)
         self.unsupervised_dataloader = unsupervised_dataloader
-        self.supervised_dataloader = supervised_dataloader
-        self.val_dataloader = val_dataloader
-        self.device = device
-        self.epochs = epochs
-        self.max_length = max_length  # Store the maximum length
         self.uda_coeff = 1.0
         self.criterion = torch.nn.CrossEntropyLoss()
 
@@ -102,8 +79,7 @@ class UDATrainer():
         for epoch in range(self.epochs):
             self.model.train()
             total_loss = 0
-            for batch, unsup_batch in zip(self.supervised_dataloader, self.unsupervised_dataloader):
-                # Labeled data
+            for batch, unsup_batch in zip(self.train_dataloader, self.unsupervised_dataloader):
                 texts, labels = batch
                 labels = labels.to(self.device)
 
@@ -115,17 +91,17 @@ class UDATrainer():
 
                 # Unsupervised data
                 unsup_texts, _ = unsup_batch
-                unsup_augmented_texts = [augment_text(text) for text in unsup_texts]
+                unsup_augmented_texts = [synonym_aug(text) for text in unsup_texts]
 
                 # Tokenize unsupervised data
                 unsup_encoded_inputs = self.tokenizer(unsup_texts, padding=True, truncation=True, return_tensors='pt',
                                                       max_length=self.max_length)
                 unsup_input_ids = unsup_encoded_inputs['input_ids'].to(self.device)
                 unsup_attention_mask = unsup_encoded_inputs['attention_mask'].to(self.device)
-
-                # Tokenize augmented unsupervised data
                 unsup_aug_encoded_inputs = self.tokenizer(unsup_augmented_texts, padding=True, truncation=True,
                                                           return_tensors='pt', max_length=self.max_length)
+
+                # Tokenize augmented unsupervised data
                 unsup_aug_input_ids = unsup_aug_encoded_inputs['input_ids'].to(self.device)
                 unsup_aug_attention_mask = unsup_aug_encoded_inputs['attention_mask'].to(self.device)
 
@@ -150,45 +126,16 @@ class UDATrainer():
                 consistency_loss = F.kl_div(unsup_probs.log_softmax(dim=1), unsup_aug_probs.softmax(dim=1),
                                             reduction='batchmean')
 
-                # Total loss
+                # Combined loss and optimizer step
                 combined_loss = supervised_loss + self.uda_coeff * consistency_loss
-                total_loss += combined_loss.item()  # Update total_loss
-
-                # Backward pass and optimization
+                total_loss += combined_loss.item()
                 combined_loss.backward()
                 self.optimizer.step()
 
-            # Average loss calculation should be done here
-            avg_train_loss = total_loss / len(self.supervised_dataloader)
-
-            # Validation accuracy calculation
+            avg_train_loss = total_loss / len(self.train_dataloader)
             val_acc = "None"
             if self.val_dataloader is not None:
                 val_acc = self.evaluate(self.val_dataloader)
             print(f'Epoch {epoch + 1}/{self.epochs}, Train Loss: {avg_train_loss}, Validation Accuracy: {val_acc}')
 
-    def evaluate(self, dataloader):
-        self.model.eval()
 
-        total_correct = 0
-        total_examples = 0
-        with torch.no_grad():
-            for batch in dataloader:
-                texts, labels = batch
-
-                # Batch encoding of texts with max_length parameter
-                inputs = self.tokenizer(texts, padding=True, truncation=True, return_tensors='pt',
-                                        max_length=self.max_length)
-
-                input_ids = inputs["input_ids"].to(self.device)
-                attention_mask = inputs["attention_mask"].to(self.device)
-                labels = labels.to(self.device)
-
-                outputs = self.model(input_ids, attention_mask=attention_mask)
-                predictions = torch.argmax(outputs.logits, dim=-1)
-
-                correct = (predictions == labels).sum().item()
-                total_correct += correct
-                total_examples += labels.size(0)
-
-        return total_correct / total_examples
