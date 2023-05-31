@@ -1,6 +1,6 @@
-from data_loader import get_dataloader
-from classifiers import SequenceBertClassifier
-from trainer import SupervisedTrainer, UDATrainer
+from Utils.data_loader import get_dataloader
+from Utils.classifiers import SequenceBertClassifier
+from Utils.trainer import SupervisedTrainer
 import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -10,7 +10,7 @@ assert str(device) == "cuda", "GPU device not available. Training will be sllooo
 bert = SequenceBertClassifier(device, pretrained_model_name="distilbert-base-uncased", num_labels=2)
 
 # Gets our dataloaders
-train_dataloader, validation_dataloader, test_dataloader = get_dataloader('Datasets/IMDB_500.csv',
+train_dataloader, validation_dataloader, test_dataloader = get_dataloader('../Datasets/IMDB_500.csv',
                                                                           splits=[0.2, 0.2, 0.6],
                                                                           batch_sizes=[8, 16, 16])
 

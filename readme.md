@@ -10,7 +10,7 @@ This is a Python project focused on text classification tasks using transformer-
    - `TextClassificationDataset`: A custom PyTorch Dataset class for text classification problems that supports text-label pairs.
    - `get_dataloader`: A function to load data from a CSV file and split it into training, validation, and test sets. CSV files must be in the format `label,text`.
 
-2. `models.py`: Contains the definition for the BERT sequence classification model.
+2. `classifiers.py`: Contains the definition for the BERT sequence classification model.
 
    **Features:**
    - `SequenceBertModel`: A class representing the BERT model used for sequence classification. It utilizes a pretrained BERT model and tokenizes input sequences.
