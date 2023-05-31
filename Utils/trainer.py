@@ -1,10 +1,9 @@
 import torch
 import torch.nn.functional as F
-from Utils.augment import synonym_aug
 
 
 class BaseTrainer:
-    def __init__(self, model, optimizer, train_dataloader, device="gpu", epochs=1, val_dataloader=None,
+    def __init__(self, model, optimizer, train_dataloader, device, epochs=1, val_dataloader=None,
                  max_length=512):
         self.tokenizer = model.tokenizer
         self.classifier = model
@@ -71,12 +70,13 @@ class SupervisedTrainer(BaseTrainer):
 
 
 class UDATrainer(BaseTrainer):
-    def __init__(self, model, optimizer, supervised_dataloader, unsupervised_dataloader, device="gpu",
+    def __init__(self, model, augmenter, optimizer, supervised_dataloader, unsupervised_dataloader, device="gpu",
                  epochs=1, val_dataloader=None, max_length=512):
         super().__init__(model, optimizer, supervised_dataloader, device, epochs, val_dataloader, max_length)
         self.unsupervised_dataloader = unsupervised_dataloader
         self.uda_coeff = 1.0
         self.criterion = torch.nn.CrossEntropyLoss()
+        self.augmenter = augmenter
 
     def train(self):
         for epoch in range(self.epochs):
@@ -94,7 +94,8 @@ class UDATrainer(BaseTrainer):
 
                 # Unsupervised data
                 unsup_texts, _ = unsup_batch
-                unsup_augmented_texts = [synonym_aug(text) for text in unsup_texts]
+
+                unsup_augmented_texts = self.augmenter.augment(unsup_texts)
 
                 # Tokenize unsupervised data
                 unsup_encoded_inputs = self.tokenizer(unsup_texts, padding=True, truncation=True, return_tensors='pt',

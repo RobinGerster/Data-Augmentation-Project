@@ -12,7 +12,7 @@ lstm = SequenceLSTMClassifier(device, pretrained_model_name="distilbert-base-unc
 # Gets our dataloaders
 train_dataloader, validation_dataloader, test_dataloader = get_dataloader('../Datasets/IMDB_Full.csv',
                                                                           splits=[0.5, 0.5, 0.0],
-                                                                          batch_sizes=[128, 128, 128])
+                                                                          batch_sizes=[16, 32, 32])
 
 # Initialize additional training parameters
 criterion = torch.nn.CrossEntropyLoss()

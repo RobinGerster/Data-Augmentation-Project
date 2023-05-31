@@ -12,7 +12,7 @@ bert = SequenceBertClassifier(device, pretrained_model_name="distilbert-base-unc
 # Gets our dataloaders
 train_dataloader, validation_dataloader, test_dataloader = get_dataloader('../Datasets/IMDB_500.csv',
                                                                           splits=[0.2, 0.2, 0.6],
-                                                                          batch_sizes=[8, 16, 16])
+                                                                          batch_sizes=[16, 32, 32])
 
 # Initialize additional training parameters
 criterion = torch.nn.CrossEntropyLoss()
