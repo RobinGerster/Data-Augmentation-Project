@@ -1,6 +1,6 @@
 from Utils.data_loader import get_dataloader
 from Utils.classifiers import SequenceLSTMClassifier
-from Utils.trainer import LSTMTrainer, SupervisedTrainer
+from Utils.trainer import SupervisedTrainer
 import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
