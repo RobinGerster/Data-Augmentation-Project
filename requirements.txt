@@ -1,0 +1,6 @@
+scikit-learn
+torch
+pandas
+numpy
+transformers==4.16.2
+nlpaug

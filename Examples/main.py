@@ -4,7 +4,7 @@ from Utils.trainer import SupervisedTrainer
 import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-assert str(device) == "cuda", "GPU device not available. Training will be sllooowwwww."
+# assert str(device) == "cuda", "GPU device not available. Training will be sllooowwwww."
 
 # Get our model
 bert = SequenceBertClassifier(device, pretrained_model_name="distilbert-base-uncased", num_labels=2)
@@ -18,7 +18,7 @@ train_dataloader, validation_dataloader, test_dataloader = get_dataloader('../Da
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.AdamW(bert.model.parameters(), lr=3e-5)
 
-assert str(device) == "cuda", "GPU device not available. Training will be sllooowwwww."
+# assert str(device) == "cuda", "GPU device not available. Training will be sllooowwwww."
 
 
 supervised_trainer = SupervisedTrainer(bert, criterion, optimizer, train_dataloader, epochs=5, device=device, val_dataloader=validation_dataloader)

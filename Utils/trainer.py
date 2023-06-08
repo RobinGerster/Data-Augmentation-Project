@@ -21,6 +21,7 @@ class BaseTrainer:
                 self.optimizer.zero_grad()
                 texts, labels = batch
                 labels = labels.to(self.device)
+                texts = list(texts)
                 inputs = self.tokenizer(texts, padding=True, truncation=True, return_tensors='pt',
                                         max_length=self.max_length)
                 input_ids = inputs["input_ids"].to(self.device)
@@ -46,6 +47,7 @@ class BaseTrainer:
         with torch.no_grad():
             for batch in dataloader:
                 texts, labels = batch
+                texts = list(texts)
                 inputs = self.tokenizer(texts, padding=True, truncation=True, return_tensors='pt',
                                         max_length=self.max_length)
                 input_ids = inputs["input_ids"].to(self.device)
