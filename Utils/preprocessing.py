@@ -6,7 +6,7 @@ def preprocess_imdb_for_ssmba_augmentation():
     path = r'../Datasets/ssmba'
     os.makedirs(path, exist_ok=True)
 
-    with open('../Datasets/IMDB_500.csv') as csvfile, open(os.path.join(path, "input.txt"), "w") as input_file, open(os.path.join(path, "label.txt"), "w") as labels_file:
+    with open('../Datasets/IMDB_20k_ssmba_train.csv', "r", encoding="utf8") as csvfile, open(os.path.join(path, "input.txt"), "w", encoding="utf8") as input_file, open(os.path.join(path, "label.txt"), "w") as labels_file:
         csvReader = csv.reader(csvfile, delimiter=',')
         for row in csvReader:
             labels_file.write(row[0] + '\n')
@@ -31,4 +31,5 @@ def ssmba_augmented_to_csv():
 
 
 if __name__ == "__main__":
-    ssmba_augmented_to_csv()
+    preprocess_imdb_for_ssmba_augmentation()
+    # ssmba_augmented_to_csv()
