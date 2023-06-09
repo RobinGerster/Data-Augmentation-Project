@@ -5,7 +5,7 @@ import time
 
 class BaseTrainer:
     def __init__(self, model, optimizer, train_dataloader, device, epochs=1, val_dataloader=None,
-                 max_length=512):
+                 max_length=128):
         self.tokenizer = model.tokenizer
         self.classifier = model
         self.optimizer = optimizer
