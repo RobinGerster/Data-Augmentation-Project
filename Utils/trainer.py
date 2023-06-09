@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import time
 
 
 class BaseTrainer:
@@ -16,6 +17,7 @@ class BaseTrainer:
 
     def train(self):
         for epoch in range(self.epochs):
+            start_time = time.time()
             total_loss = 0
             for batch in self.train_dataloader:
                 self.optimizer.zero_grad()
@@ -40,6 +42,7 @@ class BaseTrainer:
             if self.val_dataloader is not None:
                 val_acc = self.evaluate(self.val_dataloader)
             print(f'Epoch {epoch + 1}/{self.epochs}, Train Loss: {avg_train_loss}, Validation Accuracy: {val_acc}')
+            print('Execution time:', time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
 
     def evaluate(self, dataloader):
         total_correct = 0
