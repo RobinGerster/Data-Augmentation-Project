@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 import time
+import datetime
 
 
 class BaseTrainer:
@@ -42,7 +43,7 @@ class BaseTrainer:
             if self.val_dataloader is not None:
                 val_acc = self.evaluate(self.val_dataloader)
             print(f'Epoch {epoch + 1}/{self.epochs}, Train Loss: {avg_train_loss}, Validation Accuracy: {val_acc}')
-            print('Execution time:', time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
+            print(f'Current time: {datetime.datetime.now().time()}, Execution time:', time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
 
     def evaluate(self, dataloader):
         total_correct = 0
@@ -69,7 +70,7 @@ class BaseTrainer:
 
 class SupervisedTrainer(BaseTrainer):
     def __init__(self, model, criterion, optimizer, train_dataloader, device="gpu", epochs=1, val_dataloader=None,
-                 max_length=512):
+                 max_length=128):
         super().__init__(model, optimizer, train_dataloader, device, epochs, val_dataloader, max_length)
         self.criterion = criterion
 

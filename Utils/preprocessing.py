@@ -7,7 +7,9 @@ def preprocess_imdb_for_ssmba_augmentation():
     path = r'../Datasets/ssmba'
     os.makedirs(path, exist_ok=True)
 
-    with open('../Datasets/IMDB_20k_ssmba_train.csv', "r", encoding="utf8") as csvfile, open(os.path.join(path, "input.txt"), "w", encoding="utf8") as input_file, open(os.path.join(path, "labels.txt"), "w") as labels_file:
+    with open('../Datasets/IMDB_20k_ssmba_train.csv', "r", encoding="utf8") as csvfile, \
+            open(os.path.join(path, "input.txt"), "w", encoding="utf8") as input_file, \
+            open(os.path.join(path, "labels.txt"), "w") as labels_file:
         csvReader = csv.reader(csvfile, delimiter=',')
         for row in csvReader:
             labels_file.write(row[0] + '\n')
@@ -18,8 +20,9 @@ def ssmba_augmented_to_csv():
     path = r'../Datasets/ssmba/augmented'
     os.makedirs(path, exist_ok=True)
 
-    with open(os.path.join(path, "ssmba_out_imdb_500_1.txt"), "r", encoding="utf8") as input_augmented, open(os.path.join(path, "ssmba_out_imdb_500_1.label"), "r") as labels_augmented, \
-            open('../Datasets/IMDB_500_1_ssmba_train.csv', "w") as csvfile:
+    with open(os.path.join(path, "ssmba_out_imdb_500_32"), "r", encoding="utf8") as input_augmented, \
+            open(os.path.join(path, "ssmba_out_imdb_500_32.label"), "r") as labels_augmented, \
+            open('../Datasets/IMDB_500_32_ssmba_train.csv', "w", encoding="utf8") as csvfile:
         reader1 = labels_augmented.readlines()
         reader2 = input_augmented.readlines()
         writer = csv.writer(csvfile, lineterminator='\n')
@@ -27,7 +30,7 @@ def ssmba_augmented_to_csv():
         # Iterate through each line and write the sum to the CSV file
         for line1, line2 in zip(reader1, reader2):
             value1 = int(line1.strip())
-            value2 = line2.rstrip().encode("utf-8")
+            value2 = line2.rstrip()
             writer.writerow([value1, value2])
 
 
@@ -46,6 +49,5 @@ def process_sst2_data():
 
 
 if __name__ == "__main__":
-    process_sst2_data()
-    # preprocess_imdb_for_ssmba_augmentation()
-    # ssmba_augmented_to_csv()
+    # process_sst2_data()
+    ssmba_augmented_to_csv()
