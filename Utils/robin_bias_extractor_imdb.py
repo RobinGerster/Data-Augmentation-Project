@@ -9,11 +9,11 @@ from afinn import Afinn
 afinn = Afinn()
 
 #DEFINE THE DATASET PATH YOU WANT TO PRUNE
-data_path = 'IMDB_Dataset_updated.csv'
-save_path = 'IMDB_Dataset_updated_sentiment.csv'
+data_path = '../Datasets/IMDB_500.csv'
+save_path = '../Datasets/IMDB_500_sentiment.csv'
 
 # Load the dataset
-df = pd.read_csv(data_path)
+df = pd.read_csv(data_path, header=None, names=['label', 'text'])
 
 # Tags we are interested in
 interesting_tags = ['JJ', 'JJR', 'JJS']
@@ -21,7 +21,7 @@ interesting_tags = ['JJ', 'JJR', 'JJS']
 # Window size
 window_size = 32
 
-new_df = pd.DataFrame(columns=['text', 'label'])
+new_df = pd.DataFrame(columns=['label', 'text'])
 
 for index, row in df.iterrows():
     sentences = sent_tokenize(row['text'])
@@ -66,6 +66,6 @@ for index, row in df.iterrows():
     new_row = pd.DataFrame({'text': [max_interesting_window], 'label': [row['label']]})
     new_df = pd.concat([new_df, new_row], ignore_index=True)
 
-new_df.to_csv(save_path, index=False)
+new_df.to_csv(save_path, index=False, header=False)
 
 print(new_df)
