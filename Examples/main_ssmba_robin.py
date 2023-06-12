@@ -14,7 +14,7 @@ assert str(device) == "cuda", "GPU device not available. Training will be sllooo
 ood_performance_list = []
 id_performance_list = []
 
-dataset = "IMDB" #Maybe do it for one dataset at a time and save results
+dataset = "IMDB" #Maybe do it for one dataset at a time and save results run again for "MNLI"
 models = ["BERT", "LSTM", "RNN"]
 conditions = ["no_bias", "bias"]
 naug = [1, 2, 4, 8, 16, 32]
@@ -43,9 +43,9 @@ for model in models:
                     raise NotImplementedError("RNN not yet implemented")
 
                 # Get the train dataloader
-                train_dataloader, imdb_test_dataloader, sst_test_dataloader = get_imdb_ssmba_dataloaders(
+                train_dataloader, imdb_test_dataloader, sst_test_dataloader = get_ssmba_dataloaders(
                     batch_sizes=[16, 32, 32],
-                    naug=naug, bias = condition == "bias")
+                    naug=naug, bias = condition == "bias", dataset=dataset)
 
                 # Initialize additional training parameters
                 criterion = torch.nn.CrossEntropyLoss()
@@ -60,7 +60,7 @@ for model in models:
                                                        val_dataloader=imdb_test_dataloader)
                 supervised_trainer.train()
                 id_performance_list.append(
-                    max(supervised_trainer.id_performance_list))  # only care about max acc for each run
+                    max(supervised_trainer.id_performance_list))  # only care about max acc for each run. Assuming supervised_trainer stores accuracies at every epoch
 
                 # Out-of-Domain Evaluation
                 ood_performance = supervised_trainer.evaluate(sst_test_dataloader)
