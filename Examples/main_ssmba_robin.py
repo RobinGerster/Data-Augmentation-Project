@@ -52,7 +52,6 @@ for model in models:
                 optimizer = torch.optim.AdamW(m.model.parameters(), lr=3e-5)
 
                 # Training
-
                 supervised_trainer = SupervisedTrainer(m, criterion, optimizer, train_dataloader,
                                                        id_performance_list,
                                                        epochs=5,
@@ -68,7 +67,7 @@ for model in models:
 
                 pbar.update()  # increment the progress bar
             results[model][condition][naug]['id'] = id_performance_list #Should be a list on runs many max accuracies
-            results[model][condition][naug]['ood'] = ood_performance_list  # Should be a list on runs many max accuracies
+            results[model][condition][naug]['ood'] = ood_performance_list  #Should be a list on runs many max accuracies
 
 # We have everything we need for IMDB so we save the data. Later we can read it again for plotting, tables, rank test etc
 
