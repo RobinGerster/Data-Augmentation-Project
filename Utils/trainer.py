@@ -149,3 +149,55 @@ class UDATrainer(BaseTrainer):
             if self.val_dataloader is not None:
                 val_acc = self.evaluate(self.val_dataloader)
             print(f'Epoch {epoch + 1}/{self.epochs}, Train Loss: {avg_train_loss}, Validation Accuracy: {val_acc}')
+
+
+
+    
+
+class RNNTrainer(SupervisedTrainer):
+    def __init__(self,model,criterion,optimizer,train_dataloader,device="cuda",epochs=1,val_dataloader=None,
+                 max_length=512):
+        super().__init__(model,criterion, optimizer, train_dataloader, device, epochs, val_dataloader, max_length)
+
+    def train(self):
+        for epoch in range(self.epochs):
+            total_loss = 0
+            for batch in self.train_dataloader:
+                self.optimizer.zero_grad()
+                texts, labels = batch
+                labels = labels.to(self.device)
+                inputs = self.tokenizer(texts, padding=True, truncation=True, return_tensors='pt',
+                                        max_length=self.max_length)
+                input_ids = inputs["input_ids"].to(self.device)
+                
+                attention_mask = inputs["attention_mask"].to(self.device)
+                outputs = self.classifier(input_ids, attention_mask=attention_mask)
+                loss = self.criterion(outputs, labels)
+                total_loss += loss.item()
+                loss.backward()
+                self.optimizer.step()
+
+            avg_train_loss = total_loss / len(self.train_dataloader)
+            val_acc = "None"
+            if self.val_dataloader is not None:
+                val_acc = self.evaluate(self.val_dataloader)
+            train_acc=self.evaluate(self.train_dataloader)
+            print(f'Epoch {epoch + 1}/{self.epochs}, Train Loss: {avg_train_loss}, Train Accuracy:{train_acc} Validation Accuracy: {val_acc}')
+
+    def evaluate(self, dataloader):
+        total_correct = 0
+        total_examples = 0
+        with torch.no_grad():
+            for batch in dataloader:
+                texts, labels = batch
+                inputs = self.tokenizer(texts, padding=True, truncation=True, return_tensors='pt',
+                                        max_length=self.max_length)
+                input_ids = inputs["input_ids"].to(self.device)
+                labels = labels.to(self.device)
+                attention_mask = inputs["attention_mask"].to(self.device)
+                outputs = self.classifier(input_ids, attention_mask=attention_mask)
+                predictions = torch.argmax(outputs, dim=-1)
+                correct = (predictions == labels).sum().item()
+                total_correct += correct
+                total_examples += labels.size(0)
+        return total_correct / total_examples

@@ -6,6 +6,7 @@ from transformers import (
 )
 import torch
 import torch.nn as nn
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
 # Base class for a sequence classifier
@@ -77,3 +78,84 @@ class SequenceLSTMClassifier(SequenceClassifier, nn.Module):
         # Pass through the final fully connected layer
         logits = self.fc(final_output)
 
+
+class SequenceRNNClassifier(SequenceClassifier, nn.Module):
+    def __init__(self, *args, **kwargs):
+        nn.Module.__init__(self)  # Initialize nn.Module first
+        super().__init__(*args, **kwargs)
+        #self.uses_attention = False  # This model doesn't use attention
+        if "distilbert" in self.pretrained_model_name:
+            # If it is, use the corresponding tokenizer and model
+            self.tokenizer = DistilBertTokenizerFast.from_pretrained(self.pretrained_model_name)
+        else:
+            # Otherwise, use the BERT tokenizer and model
+            self.tokenizer = BertTokenizerFast.from_pretrained(self.pretrained_model_name)
+        # Define LSTM parameters
+        vocab_size = self.tokenizer.vocab_size  # Length of the tokenizer's vocab attribute
+        embedding_dim = 256  # Dimension of the embedding layer
+        hidden_dim = 128  # Dimension of the hidden state in the LSTM
+
+        # Create layers
+        self.embedding = torch.nn.Embedding(vocab_size, embedding_dim).to(self.device)  # Embedding layer
+        self.rnn=nn.GRU(embedding_dim,hidden_dim,bidirectional=True,batch_first=True).to(
+            self.device)  # LSTM layer
+        self.bn=nn.BatchNorm1d(hidden_dim*2).to(self.device)
+        self.fc = torch.nn.Linear(hidden_dim*2, self.num_labels).to(self.device)  # Fully connected output layer
+
+    def forward(self,input_ids,attention_mask=None):
+        input_ids=input_ids.to(self.device)
+        attention_mask=attention_mask.to(self.device)
+        seq_lengths=attention_mask.sum(dim=1)
+        embedded=self.embedding(input_ids)
+        row_indices=torch.arange(input_ids.size(0))
+        packed=pack_padded_sequence(embedded,attention_mask.sum(dim=1).cpu(),batch_first=True,enforce_sorted=False)
+        packed_op,_=self.rnn(packed)
+        unpacked_op,_=pad_packed_sequence(packed_op,batch_first=True)
+        #print(unpacked_op[:,seq_lengths-1,:].shape)
+
+        latest_output=unpacked_op[row_indices,seq_lengths-1,:]
+        #print(latest_output.shape)
+        #normed=self.bn(latest_output)
+        logits=self.fc(latest_output)
+        return logits
+
+
+class SequenceRNNClassifier(SequenceClassifier, nn.Module):
+    def __init__(self, *args, **kwargs):
+        nn.Module.__init__(self)  # Initialize nn.Module first
+        super().__init__(*args, **kwargs)
+        #self.uses_attention = False  # This model doesn't use attention
+        if "distilbert" in self.pretrained_model_name:
+            # If it is, use the corresponding tokenizer and model
+            self.tokenizer = DistilBertTokenizerFast.from_pretrained(self.pretrained_model_name)
+        else:
+            # Otherwise, use the BERT tokenizer and model
+            self.tokenizer = BertTokenizerFast.from_pretrained(self.pretrained_model_name)
+        # Define LSTM parameters
+        vocab_size = self.tokenizer.vocab_size  # Length of the tokenizer's vocab attribute
+        embedding_dim = 256  # Dimension of the embedding layer
+        hidden_dim = 128  # Dimension of the hidden state in the LSTM
+
+        # Create layers
+        self.embedding = torch.nn.Embedding(vocab_size, embedding_dim).to(self.device)  # Embedding layer
+        self.rnn=nn.GRU(embedding_dim,hidden_dim,bidirectional=True,batch_first=True).to(
+            self.device)  # LSTM layer
+        self.bn=nn.BatchNorm1d(hidden_dim*2).to(self.device)
+        self.fc = torch.nn.Linear(hidden_dim*2, self.num_labels).to(self.device)  # Fully connected output layer
+
+    def forward(self,input_ids,attention_mask=None):
+        input_ids=input_ids.to(self.device)
+        attention_mask=attention_mask.to(self.device)
+        seq_lengths=attention_mask.sum(dim=1)
+        embedded=self.embedding(input_ids)
+        row_indices=torch.arange(input_ids.size(0))
+        packed=pack_padded_sequence(embedded,attention_mask.sum(dim=1).cpu(),batch_first=True,enforce_sorted=False)
+        packed_op,_=self.rnn(packed)
+        unpacked_op,_=pad_packed_sequence(packed_op,batch_first=True)
+        #print(unpacked_op[:,seq_lengths-1,:].shape)
+
+        latest_output=unpacked_op[row_indices,seq_lengths-1,:]
+        #print(latest_output.shape)
+        #normed=self.bn(latest_output)
+        logits=self.fc(latest_output)
+        return logits
