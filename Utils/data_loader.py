@@ -85,21 +85,25 @@ def get_imdb_full_ssmba_split(batch_sizes, save=False):
     return loaders
 
 
-def get_imdb_ssmba_dataloaders(batch_sizes, naug=1):
+def get_ssmba_dataloaders(batch_sizes, naug=1, bias=False, dataset="IMDB"):
     # Specify there is no header in the file
-    train_df = pd.read_csv("../Datasets/IMDB_500_" + str(naug) + "_ssmba_train.csv", header=None, names=["label", "text"])
-    test_df = pd.read_csv("../Datasets/IMDB_100_ssmba_test.csv", header=None, names=["label", "text"])
-    ood_df = pd.read_csv("../Datasets/SST-2_100_ssmba_test.csv", header=None, names=["label", "text"])
+    if not bias:
+        train_df = pd.read_csv("../Datasets/" + dataset + "_500_" + str(naug) + "_ssmba_train.csv", header=None, names=["label", "text"])
+        test_df = pd.read_csv("../Datasets/" + dataset + "_100_ssmba_test.csv", header=None, names=["label", "text"])
+        ood_df = pd.read_csv("../Datasets/SST-2_100_ssmba_test.csv", header=None, names=["label", "text"])
+    else:
+        # Files generated after including the inductive bias
+        train_df, test_df, ood_df = [], [], []
 
     datasets = [train_df, test_df, ood_df]
     loaders = []
 
-    for i, dataset in enumerate(datasets):
-        texts = dataset["text"].tolist()
-        labels = dataset["label"].tolist()
+    for i, data in enumerate(datasets):
+        texts = data["text"].tolist()
+        labels = data["label"].tolist()
 
-        dataset = TextClassificationDataset(texts, labels)
-        dataloader = DataLoader(dataset, batch_size=batch_sizes[i], shuffle=True)
+        data = TextClassificationDataset(texts, labels)
+        dataloader = DataLoader(data, batch_size=batch_sizes[i], shuffle=True)
 
         loaders.append(dataloader)
 
@@ -118,9 +122,3 @@ def prepare_imdb_test_data(save=False):
     # Save these examples in a separate file for ssmba augmentation
     if save:
         test_df.to_csv('../Datasets/IMDB_100_ssmba_test.csv', index=False, header=False)
-
-
-if __name__ == "__main__":
-    pass
-    # prepare_imdb_test_data(save=True)
-    # get_imdb_ssmba_dataloaders([2, 2])
