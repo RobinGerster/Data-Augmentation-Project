@@ -85,9 +85,9 @@ def get_imdb_full_ssmba_split(batch_sizes, save=False):
     return loaders
 
 
-def get_imdb_ssmba_dataloaders(batch_sizes):
+def get_imdb_ssmba_dataloaders(batch_sizes, naug=1):
     # Specify there is no header in the file
-    train_df = pd.read_csv("../Datasets/IMDB_500_4_ssmba_train.csv", header=None, names=["label", "text"])
+    train_df = pd.read_csv("../Datasets/IMDB_500_" + str(naug) + "_ssmba_train.csv", header=None, names=["label", "text"])
     test_df = pd.read_csv("../Datasets/IMDB_100_ssmba_test.csv", header=None, names=["label", "text"])
     ood_df = pd.read_csv("../Datasets/SST-2_100_ssmba_test.csv", header=None, names=["label", "text"])
 

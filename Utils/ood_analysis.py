@@ -1,18 +1,56 @@
+from transformers import AutoTokenizer, AutoModel
 from Utils.classifiers import SequenceBertClassifier
+
 import pandas as pd
 import torch
 
+import time
+import datetime
+
 # The vector embedding associated to each text is simply the hidden state that Bert outputs for the [CLS] token.
 
-device = "cpu"
-bert = SequenceBertClassifier(device, pretrained_model_name="bert-base-uncased", num_labels=2)
-tokenizer = bert.tokenizer
+print(f"Current time: {datetime.datetime.now().time()}")
+start_time = time.time()
 
-train_df = pd.read_csv("../Datasets/IMDB_500_4_ssmba_train.csv", header=None, names=["label", "text"])
-tokenized_train = tokenizer(train_df["text"].values.tolist(), padding=True, truncation=True, return_tensors="pt")
+device = "cpu"
+
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+model = AutoModel.from_pretrained("bert-base-uncased").to(device)
+
+augmented_df = pd.read_csv("../Datasets/IMDB_500_1_ssmba_train.csv", header=None, names=["label", "text"])
+tokenized_augmented = tokenizer(augmented_df["text"].values.tolist(), padding=True, truncation=True, return_tensors="pt")
+
+original_df = pd.read_csv("../Datasets/IMDB_500.csv", header=None, names=["label", "text"])
+tokenized_original = tokenizer(original_df["text"].values.tolist(), padding=True, truncation=True, return_tensors="pt")
+
+tokenized_augmented = {k: torch.tensor(v).to(device) for k, v in tokenized_augmented.items()}
+tokenized_original = {k: torch.tensor(v).to(device) for k, v in tokenized_original.items()}
 
 with torch.no_grad():
-  hidden_train = bert(**tokenized_train)
+  hidden_augmented = model(**tokenized_augmented)
+  hidden_original = model(**tokenized_original)
+
+embeddings_augmented = hidden_augmented.last_hidden_state[:, 0, :]
+embeddings_original = hidden_original.last_hidden_state[:, 0, :]
+
+print('Execution time:', time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
+
+# Our model
+
+# bert = SequenceBertClassifier(device, pretrained_model_name="bert-base-uncased", num_labels=2)
+# tokenizer = bert.tokenizer
+#
+# train_df = pd.read_csv("../Datasets/IMDB_100_ssmba_test.csv", header=None, names=["label", "text"])
+# tokenized_train = tokenizer(train_df["text"].values.tolist(), padding=True, truncation=True, return_tensors="pt")
+#
+# with torch.no_grad():
+#     input_ids = tokenized_train["input_ids"].to(device)
+#     if bert.uses_attention:
+#       attention_mask = tokenized_train["attention_mask"].to(device)
+#       outputs = bert(input_ids, attention_mask=attention_mask)
+#       last_hidden_state_cls = outputs[0][:, 0, :]
+#
+# print('Execution time:', time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
 
 # Extract the vector embeddings
-train_embeddings = hidden_train.last_hidden_state[:, 0, :]
+# train_embeddings = hidden_train.last_hidden_state[:, 0, :]

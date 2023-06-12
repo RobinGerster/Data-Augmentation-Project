@@ -5,7 +5,7 @@ import datetime
 
 
 class BaseTrainer:
-    def __init__(self, model, optimizer, train_dataloader, device, epochs=1, val_dataloader=None,
+    def __init__(self, model, optimizer, train_dataloader, id_performance_list, device, epochs=1, val_dataloader=None,
                  max_length=128):
         self.tokenizer = model.tokenizer
         self.classifier = model
@@ -15,6 +15,7 @@ class BaseTrainer:
         self.device = device
         self.epochs = epochs
         self.max_length = max_length
+        self.id_performance_list = id_performance_list
 
     def train(self):
         for epoch in range(self.epochs):
@@ -43,6 +44,7 @@ class BaseTrainer:
             if self.val_dataloader is not None:
                 val_acc = self.evaluate(self.val_dataloader)
             print(f'Epoch {epoch + 1}/{self.epochs}, Train Loss: {avg_train_loss}, Validation Accuracy: {val_acc}')
+            self.id_performance_list.append(val_acc)
             print(f'Current time: {datetime.datetime.now().time()}, Execution time:', time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
 
     def evaluate(self, dataloader):
@@ -69,9 +71,9 @@ class BaseTrainer:
 
 
 class SupervisedTrainer(BaseTrainer):
-    def __init__(self, model, criterion, optimizer, train_dataloader, device="gpu", epochs=1, val_dataloader=None,
+    def __init__(self, model, criterion, optimizer, train_dataloader, id_performance_list, device="gpu", epochs=1, val_dataloader=None,
                  max_length=128):
-        super().__init__(model, optimizer, train_dataloader, device, epochs, val_dataloader, max_length)
+        super().__init__(model, optimizer, train_dataloader, id_performance_list, device, epochs, val_dataloader, max_length)
         self.criterion = criterion
 
 
