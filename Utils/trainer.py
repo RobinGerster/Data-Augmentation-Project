@@ -6,7 +6,7 @@ import datetime
 
 class BaseTrainer:
     def __init__(self, model, optimizer, train_dataloader, id_performance_list, device, epochs=1, val_dataloader=None,
-                 max_length=128):
+                 max_length=32):
         self.tokenizer = model.tokenizer
         self.classifier = model
         self.optimizer = optimizer
@@ -72,7 +72,7 @@ class BaseTrainer:
 
 class SupervisedTrainer(BaseTrainer):
     def __init__(self, model, criterion, optimizer, train_dataloader, id_performance_list, device="gpu", epochs=1, val_dataloader=None,
-                 max_length=128):
+                 max_length=32):
         super().__init__(model, optimizer, train_dataloader, id_performance_list, device, epochs, val_dataloader, max_length)
         self.criterion = criterion
 
