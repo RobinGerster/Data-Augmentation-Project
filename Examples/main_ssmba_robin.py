@@ -15,9 +15,9 @@ dataset = "IMDB"  # Maybe do it for one dataset at a time and save results run a
 models = ["BERT", "LSTM", "RNN"]
 
 conditions = ["no_bias", "bias"]
-naug = [1,2,4,8,16,32]
+naug = [1, 2, 4, 8, 16, 32]
 runs = 5
-epochs = 15
+epochs = 10
 results = {}
 
 total_runs = len(conditions) * len(naug) * runs * len(models)
@@ -31,18 +31,21 @@ for model in models:
             results[model][condition][n] = {}
             id_performance_list = []
             ood_performance_list = []
-            for run in range(1, runs+1):
+            for run in range(1, runs + 1):
                 # Get our model
                 if dataset == "IMDB":
                     labels = 2
                 else:
                     labels = 3
                 if model == "BERT":
-                    m = SequenceBertClassifier(device, pretrained_model_name="distilbert-base-uncased", num_labels=labels)
+                    m = SequenceBertClassifier(device, pretrained_model_name="distilbert-base-uncased",
+                                               num_labels=labels)
                 elif model == "LSTM":
-                    m = SequenceLSTMClassifier(device, pretrained_model_name="distilbert-base-uncased", num_labels=labels)
+                    m = SequenceLSTMClassifier(device, pretrained_model_name="distilbert-base-uncased",
+                                               num_labels=labels)
                 elif model == "RNN":
-                    m = SequenceRNNClassifier(device, pretrained_model_name="distilbert-base-uncased", num_labels=labels)
+                    m = SequenceRNNClassifier(device, pretrained_model_name="distilbert-base-uncased",
+                                              num_labels=labels)
 
                 # Get the train dataloader
                 train_dataloader, imdb_test_dataloader, sst_test_dataloader = get_ssmba_dataloaders(
@@ -70,7 +73,8 @@ for model in models:
 
                 pbar.update()  # increment the progress bar
 
-            id_performance_list = [max(id_performance_list[i-runs:i]) for i in range(epochs, runs * epochs + 1, epochs)]
+            id_performance_list = [max(id_performance_list[i - runs:i]) for i in
+                                   range(epochs, runs * epochs + 1, epochs)]
             results[model][condition][n]['id'] = id_performance_list  # Should be a list on runs many max accuracies
             results[model][condition][n]['ood'] = ood_performance_list  # Should be a list on runs many max accuracies
 
