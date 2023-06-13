@@ -34,5 +34,5 @@ for type in ["id", "ood"]:
     print(f"Wilcoxon test for type: {type} gives W = {w}, p = {p}")
 
 
-
+#Added a function to plot the data
 
