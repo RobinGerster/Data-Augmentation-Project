@@ -15,12 +15,12 @@ dataset = "IMDB"  # Maybe do it for one dataset at a time and save results run a
 models = ["BERT", "LSTM", "RNN"]
 
 conditions = ["no_bias", "bias"]
-naug = [1, 2, 4, 8, 16, 32]
+naug = [1,2,4,8,16,32]
 runs = 5
-epochs = 5
+epochs = 15
 results = {}
 
-total_runs = len(dataset) * len(conditions) * len(naug) * runs
+total_runs = len(conditions) * len(naug) * runs * len(models)
 pbar = tqdm(total=total_runs, desc='Progress...')
 
 for model in models:
@@ -51,7 +51,10 @@ for model in models:
 
                 # Initialize additional training parameters
                 criterion = torch.nn.CrossEntropyLoss()
-                optimizer = torch.optim.AdamW(m.model.parameters(), lr=3e-5)
+                if model == "BERT":
+                    optimizer = torch.optim.AdamW(m.model.parameters(), lr=3e-5)
+                else:
+                    optimizer = torch.optim.AdamW(m.parameters(), lr=3e-5)
 
                 # Training
                 supervised_trainer = SupervisedTrainer(m, criterion, optimizer, train_dataloader,

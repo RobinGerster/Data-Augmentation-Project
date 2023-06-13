@@ -78,6 +78,8 @@ class SequenceLSTMClassifier(SequenceClassifier, nn.Module):
         # Pass through the final fully connected layer
         logits = self.fc(final_output)
 
+        return logits
+
 
 class SequenceRNNClassifier(SequenceClassifier, nn.Module):
     def __init__(self, *args, **kwargs):
