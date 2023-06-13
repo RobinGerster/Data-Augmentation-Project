@@ -159,9 +159,6 @@ class UDATrainer(BaseTrainer):
             print(f'Epoch {epoch + 1}/{self.epochs}, Train Loss: {avg_train_loss}, Validation Accuracy: {val_acc}')
 
 
-
-    
-
 class RNNTrainer(SupervisedTrainer):
     def __init__(self,model,criterion,optimizer,train_dataloader,device="cuda",epochs=1,val_dataloader=None,
                  max_length=512):

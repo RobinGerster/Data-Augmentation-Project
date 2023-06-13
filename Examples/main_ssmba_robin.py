@@ -1,5 +1,5 @@
 from Utils.data_loader import get_ssmba_dataloaders
-from Utils.classifiers import SequenceBertClassifier, SequenceLSTMClassifier
+from Utils.classifiers import SequenceBertClassifier, SequenceLSTMClassifier, SequenceRNNClassifier
 from Utils.trainer import SupervisedTrainer
 import torch
 import time
@@ -42,7 +42,7 @@ for model in models:
                 elif model == "LSTM":
                     m = SequenceLSTMClassifier(device, pretrained_model_name="distilbert-base-uncased", num_labels=labels)
                 elif model == "RNN":
-                    raise NotImplementedError("RNN not yet implemented")
+                    m = SequenceRNNClassifier(device, pretrained_model_name="distilbert-base-uncased", num_labels=labels)
 
                 # Get the train dataloader
                 train_dataloader, imdb_test_dataloader, sst_test_dataloader = get_ssmba_dataloaders(
