@@ -5,7 +5,7 @@ from scipy.stats import wilcoxon
 #Expecting results in format results[model][condition][naug]['id' or 'ood'] !!!!!!!!!!!!!!!
 
 #Load your results
-with open('path to pkl', 'rb') as f:
+with open('../IMDB_RESULTS_SSMBA.pkl', 'rb') as f:
     results = pickle.load(f)
 
 model = "BERT"

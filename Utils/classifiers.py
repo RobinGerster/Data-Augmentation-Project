@@ -32,12 +32,6 @@ class SequenceBertClassifier(SequenceClassifier):
             self.model = DistilBertForSequenceClassification.from_pretrained(
                 self.pretrained_model_name, num_labels=self.num_labels
             ).to(self.device)
-        else:
-            # Otherwise, use the BERT tokenizer and model
-            self.tokenizer = BertTokenizerFast.from_pretrained(self.pretrained_model_name)
-            self.model = BertForSequenceClassification.from_pretrained(
-                self.pretrained_model_name, num_labels=self.num_labels
-            ).to(self.device)
 
     def __call__(self, inputs, attention_mask):
         # Call the model with the inputs and attention mask, and return the logits
@@ -50,7 +44,7 @@ class SequenceLSTMClassifier(SequenceClassifier, nn.Module):
         nn.Module.__init__(self)  # Initialize nn.Module first
         super().__init__(*args, **kwargs)
         self.uses_attention = False  # This model doesn't use attention
-        self.tokenizer = BertTokenizerFast.from_pretrained(self.pretrained_model_name)  # Use the BERT tokenizer
+        self.tokenizer = DistilBertTokenizerFast.from_pretrained(self.pretrained_model_name)  # Use the BERT tokenizer
 
         # Define LSTM parameters
         vocab_size = self.tokenizer.vocab_size  # Length of the tokenizer's vocab attribute
