@@ -59,14 +59,31 @@ def get_ssmba_dataloaders(batch_sizes, naug=1, bias=False, dataset="IMDB"):
     # Specify there is no header in the file
     if dataset == "IMDB":
         if not bias:
-            train_df = pd.read_csv("../Datasets/" + dataset + "_500_" + str(naug) + "_ssmba_train.csv", header=None, names=["label", "text"])
+            train_df = pd.read_csv("../Datasets/imdb_no_bias/" + dataset + "_500_" + str(naug) + "_ssmba_train.csv", header=None, names=["label", "text"])
         else:
             # Files generated after including the inductive bias
-            train_df = pd.read_csv("../Datasets/" + dataset + "_500_sentiment_" + str(naug) + "_ssmba_train.csv", header=None,
-                                   names=["label", "text"])
+            train_df = pd.read_csv("../Datasets/imdb_bias/" + dataset + "_500_bias_" + str(naug) + "_ssmba_train.csv", header=None, names=["label", "text"])
+    if dataset == "MNLI":
+        if not bias:
+            train_df = pd.read_csv("../Datasets/mnli_no_bias/" + dataset + "_500_" + str(naug) + "_ssmba_train.csv", header=None, names=["label", "text"])
+        else:
+            # Files generated after including the inductive bias
+            train_df = pd.read_csv("../Datasets/mnli_bias/" + dataset + "_500_bias_" + str(naug) + "_ssmba_train.csv", header=None, names=["label", "text"])
 
-    test_df = pd.read_csv("../Datasets/" + dataset + "_1000_ssmba_val.csv", header=None, names=["label", "text"])
-    ood_df = pd.read_csv("../Datasets/SST-2_1000_ssmba_test.csv", header=None, names=["label", "text"])
+    if dataset == "IMDB":
+        if not bias:
+            test_df = pd.read_csv("../Datasets/" + dataset + "_1000_ssmba_val.csv", header=None, names=["label", "text"])
+            ood_df = pd.read_csv("../Datasets/SST-2_1000_ssmba_test.csv", header=None, names=["label", "text"])
+        else:
+            test_df = pd.read_csv("../Datasets/" + dataset + "_1000_ssmba_bias_val.csv", header=None, names=["label", "text"])
+            ood_df = pd.read_csv("../Datasets/SST-2_1000_ssmba_bias_test.csv", header=None, names=["label", "text"])
+    if dataset == "MNLI":
+        if not bias:
+            test_df = pd.read_csv("../Datasets/" + dataset + "_ssmba_val.csv", header=None, names=["label", "text"])
+            ood_df = pd.read_csv("../Datasets/" + dataset + "_ssmba_test.csv", header=None, names=["label", "text"])
+        else:
+            test_df = pd.read_csv("../Datasets/" + dataset + "_ssmba_bias_val.csv", header=None, names=["label", "text"])
+            ood_df = pd.read_csv("../Datasets/" + dataset + "_ssmba_bias_test.csv", header=None, names=["label", "text"])
 
     datasets = [train_df, test_df, ood_df]
     loaders = []
