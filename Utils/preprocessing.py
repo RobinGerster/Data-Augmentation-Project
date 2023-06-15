@@ -2,6 +2,11 @@ import csv
 import os
 from datasets import load_dataset
 import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+
+nltk.download('stopwords')
 
 
 def preprocess_imdb_for_ssmba_augmentation(dataset, bias):
@@ -80,11 +85,20 @@ def ssmba_augmented_to_csv(dataset, bias):
             reader2 = input_augmented.readlines()
             writer = csv.writer(csvfile, lineterminator='\n')
 
+            stop_words = set(stopwords.words('english'))
+
             # Combine augmented text with labels
             for line1, line2 in zip(reader1, reader2):
                 value1 = int(line1.strip())
                 value2 = line2.rstrip()
+                print(value2)
+                # Remove stop words
+                word_tokens = word_tokenize(value2)
+                filtered_sentence = [w for w in word_tokens if w not in stop_words]
+                value2 = " ".join(filtered_sentence)
+                print(value2)
                 writer.writerow([value1, value2])
+                break
 
             # Add original data
             for label, text in zip(original_labels, original_text):
