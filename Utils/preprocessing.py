@@ -53,20 +53,23 @@ def ssmba_augmented_to_csv(bias=False):
                 writer.writerow([label, text])
 
 
-def process_sst2_data():
-    val_dataset = load_dataset('glue', 'sst2', split='validation')
-    text = val_dataset["sentence"]
-    labels = val_dataset["label"]
-    with open('../Datasets/SST-2_100_ssmba_test.csv', "w", encoding="utf-8") as csvfile:
-        writer = csv.writer(csvfile, lineterminator='\n')
-        i = 0
-        for sentence, label in zip(text, labels):
-            if i == 100:
-                break
-            writer.writerow([label, sentence.encode("utf-8")])
-            i += 1
+def prepare_sst2():
+    dataset = load_dataset('glue', 'sst2', split='train')
+    df = pd.DataFrame(columns=['label', 'text'])
+    df['text'] = dataset["sentence"]
+    df['label'] = dataset["label"]
+
+    new_df = pd.DataFrame(columns=['label', 'text'])
+    for i, sentiment in enumerate(df['text']):
+        if len(sentiment.split()) > 32:
+            new_df.loc[i] = df.loc[i]
+        if len(new_df) == 1000:
+            break
+
+    new_df.to_csv('../Datasets/SST-2_1000_ssmba_test.csv', index=False, header=False)
 
 
 if __name__ == "__main__":
+    prepare_sst2()
     # preprocess_imdb_for_ssmba_augmentation()
-    ssmba_augmented_to_csv(bias=True)
+    # ssmba_augmented_to_csv(bias=True)

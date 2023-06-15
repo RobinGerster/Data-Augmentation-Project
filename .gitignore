@@ -161,7 +161,4 @@ cython_debug/
 .DS_Store
 .vscode
 
-Datasets/ssmba
-Datasets/multinli_1.0
-Datasets/IMDB_500_*
-Datasets/MNLI_*
+Datasets/

@@ -116,11 +116,11 @@ def prepare_imdb_test_data(save=False):
     # Specify there is no header in the file
     df = pd.read_csv("../Datasets/IMDB_Full.csv", header=None)
     df1 = df.head(500)
-    df2 = df.head(600)
+    df2 = df.head(1500)
 
     # Contain 100 examples
     test_df = df2.drop(df1.index)
 
     # Save these examples in a separate file for ssmba augmentation
     if save:
-        test_df.to_csv('../Datasets/IMDB_100_ssmba_test.csv', index=False, header=False)
+        test_df.to_csv('../Datasets/IMDB_1000_ssmba_test.csv', index=False, header=False)

@@ -68,7 +68,7 @@ new_test_df = pd.DataFrame()
 for genre in genre_mismatched:
     new_test_df = process_mnli(test, genre, test_df, new_test_df, 200)
 
-# # Save DataFrame to CSV
+# Save DataFrame to CSV
 new_train_df.to_csv('../Datasets/MNLI_ssmba_train.csv', index=False, header=False)
 new_val_df.to_csv('../Datasets/MNLI_ssmba_val.csv', index=False, header=False)
 new_test_df.to_csv('../Datasets/MNLI_ssmba_test.csv', index=False, header=False)
