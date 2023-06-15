@@ -59,7 +59,7 @@ def process_mnli(split, genre, split_df, new_df, num_samples):
             break
     split[genre]['text'] = sentences
     split[genre]['label'] = labels
-    new_df_1 = pd.DataFrame(split[genre], columns=['text', 'label'], index=None)
+    new_df_1 = pd.DataFrame(split[genre], columns=['label', 'text'], index=None)
     return pd.concat([new_df, new_df_1])
 
 

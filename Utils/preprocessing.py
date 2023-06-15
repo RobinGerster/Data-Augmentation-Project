@@ -4,11 +4,28 @@ from datasets import load_dataset
 import pandas as pd
 
 
-def preprocess_imdb_for_ssmba_augmentation():
-    path = r'../Datasets/ssmba/bias'
+def preprocess_imdb_for_ssmba_augmentation(dataset, bias):
+    if bias:
+        save_folder = 'bias'
+    else:
+        save_folder = 'no_bias'
+
+    path = r'../Datasets/ssmba/mnli_' + save_folder + '/to_augment'
     os.makedirs(path, exist_ok=True)
 
-    with open('../Datasets/IMDB_500_bias.csv', "r", encoding="utf8") as csvfile, \
+    if dataset == "MNLI":
+        if bias:
+            train_set = '../Datasets/MNLI_ssmba_bias_train.csv'
+        else:
+            train_set = '../Datasets/MNLI_ssmba_train.csv'
+
+    if dataset == "IMDB":
+        if bias:
+            train_set = '../Datasets/IMDB_500_bias.csv'
+        else:
+            train_set = '../Datasets/IMDB_500.csv'
+
+    with open(train_set, "r", encoding="utf8") as csvfile, \
             open(os.path.join(path, "input.txt"), "w", encoding="utf8") as input_file, \
             open(os.path.join(path, "labels.txt"), "w") as labels_file:
         csvReader = csv.reader(csvfile, delimiter=',')
@@ -83,6 +100,6 @@ def prepare_imdb_val(save=False):
         test_df.to_csv('../Datasets/IMDB_1000_ssmba_val.csv', index=False, header=False)
 
 
-# if __name__ == "__main__":
-    # preprocess_imdb_for_ssmba_augmentation()
+if __name__ == "__main__":
+    preprocess_imdb_for_ssmba_augmentation(dataset="MNLI", bias=True)
     # ssmba_augmented_to_csv(bias=True)

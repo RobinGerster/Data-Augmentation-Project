@@ -11,7 +11,7 @@ data_path = '../Datasets/MNLI_ssmba_train.csv'
 save_path = '../Datasets/MNLI_ssmba_bias_train.csv'
 
 # Load the dataset
-df = pd.read_csv(data_path, header=None, names=['text', 'label'])
+df = pd.read_csv(data_path, header=None, names=['label', 'text'])
 
 # Tags we are interested in
 interesting_tags = ['JJ', 'JJR', 'JJS']
@@ -19,7 +19,7 @@ interesting_tags = ['JJ', 'JJR', 'JJS']
 # Window size
 window_size = 32
 
-new_df = pd.DataFrame(columns=['text', 'label'])
+new_df = pd.DataFrame(columns=['label', 'text'])
 
 for index, row in df.iterrows():
     sentences = sent_tokenize(row['text'])
