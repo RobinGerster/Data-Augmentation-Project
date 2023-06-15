@@ -2,11 +2,6 @@ import csv
 import os
 from datasets import load_dataset
 import pandas as pd
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-
-nltk.download('stopwords')
 
 
 def preprocess_imdb_for_ssmba_augmentation(dataset, bias):
@@ -21,7 +16,7 @@ def preprocess_imdb_for_ssmba_augmentation(dataset, bias):
             train_set = '../Datasets/IMDB_500_bias.csv'
         else:
             train_set = '../Datasets/IMDB_500.csv'
-        path = r'../Datasets/ssmba/mnli_' + save_folder
+        path = r'../Datasets/ssmba/imdb_' + save_folder
 
     if dataset == "MNLI":
         if bias:
@@ -56,23 +51,24 @@ def ssmba_augmented_to_csv(dataset, bias):
                 original_df = pd.read_csv("../Datasets/IMDB_500.csv", header=None, names=["label", "text"])
             else:
                 original_df = pd.read_csv("../Datasets/IMDB_500_bias.csv", header=None, names=["label", "text"])
-            sentences = "ssmba_out_imdb_500_" + sentiment + "_" + str(naug)
-            labels = "ssmba_out_imdb_500_" + sentiment + "_" + str(naug) + ".label"
-            output = "../Datasets/imdb_" + sentiment + "/IMDB_500_" + sentiment + "_" + str(naug) + "_ssmba_train.csv"
-            path = "../Datasets/mnli_" + sentiment
+            output_path = "../Datasets/imdb_" + sentiment
+            os.makedirs(output_path, exist_ok=True)
+            output = os.path.join(output_path, "IMDB_" + sentiment + "_" + str(naug) + "_ssmba_train.csv")
+            path = "../Datasets/ssmba/imdb_" + sentiment
+            sentences = "ssmba_out_imdb_" + sentiment + "_" + str(naug)
+            labels = "ssmba_out_imdb_" + sentiment + "_" + str(naug) + ".label"
 
         if dataset == "MNLI":
             if not bias:
                 original_df = pd.read_csv("../Datasets/MNLI_ssmba_train.csv", header=None, names=["label", "text"])
             else:
                 original_df = pd.read_csv("../Datasets/MNLI_ssmba_bias_train.csv", header=None, names=["label", "text"])
+            output_path = "../Datasets/mnli_" + sentiment
+            os.makedirs(output_path, exist_ok=True)
+            output = os.path.join(output_path, "MNLI_" + sentiment + "_" + str(naug) + "_ssmba_train.csv")
+            path = "../Datasets/ssmba/mnli_" + sentiment
             sentences = "ssmba_out_mnli_" + sentiment + "_" + str(naug)
             labels = "ssmba_out_mnli_" + sentiment + "_" + str(naug) + ".label"
-            output = "../Datasets/mnli_" + sentiment + "/MNLI_" + sentiment + "_" + str(naug) + "_ssmba_train.csv"
-            path = "../Datasets/mnli_" + sentiment
-
-        # Create folder to save the augmented data
-        os.makedirs(path, exist_ok=True)
 
         original_text = original_df["text"]
         original_labels = original_df["label"]
@@ -85,20 +81,12 @@ def ssmba_augmented_to_csv(dataset, bias):
             reader2 = input_augmented.readlines()
             writer = csv.writer(csvfile, lineterminator='\n')
 
-            stop_words = set(stopwords.words('english'))
-
             # Combine augmented text with labels
             for line1, line2 in zip(reader1, reader2):
                 value1 = int(line1.strip())
                 value2 = line2.rstrip()
-                print(value2)
-                # Remove stop words
-                word_tokens = word_tokenize(value2)
-                filtered_sentence = [w for w in word_tokens if w not in stop_words]
-                value2 = " ".join(filtered_sentence)
-                print(value2)
+
                 writer.writerow([value1, value2])
-                break
 
             # Add original data
             for label, text in zip(original_labels, original_text):
@@ -135,6 +123,6 @@ def prepare_imdb_val(save=False):
         test_df.to_csv('../Datasets/IMDB_1000_ssmba_val.csv', index=False, header=False)
 
 
-# if __name__ == "__main__":
-    # preprocess_imdb_for_ssmba_augmentation(dataset="MNLI", bias=True)
-    # ssmba_augmented_to_csv(bias=True)
+if __name__ == "__main__":
+    # preprocess_imdb_for_ssmba_augmentation(dataset="IMDB", bias=True)
+    ssmba_augmented_to_csv(dataset="MNLI", bias=False)
