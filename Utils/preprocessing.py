@@ -8,7 +8,7 @@ def preprocess_imdb_for_ssmba_augmentation():
     path = r'../Datasets/ssmba/bias'
     os.makedirs(path, exist_ok=True)
 
-    with open('../Datasets/IMDB_500_sentiment.csv', "r", encoding="utf8") as csvfile, \
+    with open('../Datasets/IMDB_500_bias.csv', "r", encoding="utf8") as csvfile, \
             open(os.path.join(path, "input.txt"), "w", encoding="utf8") as input_file, \
             open(os.path.join(path, "labels.txt"), "w") as labels_file:
         csvReader = csv.reader(csvfile, delimiter=',')
@@ -27,12 +27,12 @@ def ssmba_augmented_to_csv(bias=False):
             original_text = original_df["text"]
             original_labels = original_df["label"]
         else:
-            original_df = pd.read_csv("../Datasets/IMDB_500_sentiment.csv", header=None, names=["label", "text"])
+            original_df = pd.read_csv("../Datasets/IMDB_500_bias.csv", header=None, names=["label", "text"])
             original_text = original_df["text"]
             original_labels = original_df["label"]
 
         if bias:
-            sentiment = "sentiment_"
+            sentiment = "bias_"
         else:
             sentiment = ""
 
@@ -53,7 +53,7 @@ def ssmba_augmented_to_csv(bias=False):
                 writer.writerow([label, text])
 
 
-def prepare_sst2():
+def prepare_sst2_test():
     dataset = load_dataset('glue', 'sst2', split='train')
     df = pd.DataFrame(columns=['label', 'text'])
     df['text'] = dataset["sentence"]
@@ -69,7 +69,20 @@ def prepare_sst2():
     new_df.to_csv('../Datasets/SST-2_1000_ssmba_test.csv', index=False, header=False)
 
 
-if __name__ == "__main__":
-    prepare_sst2()
+def prepare_imdb_val(save=False):
+    # Specify there is no header in the file
+    df = pd.read_csv("../Datasets/IMDB_Full.csv", header=None)
+    df1 = df.head(500)
+    df2 = df.head(1500)
+
+    # Contain 100 examples
+    test_df = df2.drop(df1.index)
+
+    # Save these examples in a separate file for ssmba augmentation
+    if save:
+        test_df.to_csv('../Datasets/IMDB_1000_ssmba_val.csv', index=False, header=False)
+
+
+# if __name__ == "__main__":
     # preprocess_imdb_for_ssmba_augmentation()
     # ssmba_augmented_to_csv(bias=True)

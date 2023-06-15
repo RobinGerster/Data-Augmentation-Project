@@ -50,8 +50,15 @@ def group_genres(df, genre, data_dict):
 def process_mnli(split, genre, split_df, new_df, num_samples):
     split[genre] = {}
     group_genres(split_df, genre, split)
-    split[genre]['text'] = split[genre]['text'][:num_samples]
-    split[genre]['label'] = split[genre]['label'][:num_samples]
+    sentences, labels = [], []
+    for sentiment, label in zip(split[genre]['text'], split[genre]['label']):
+        if len(sentiment.split()) > 32:
+            sentences.append(sentiment)
+            labels.append(label)
+        if len(sentences) == num_samples:
+            break
+    split[genre]['text'] = sentences
+    split[genre]['label'] = labels
     new_df_1 = pd.DataFrame(split[genre], columns=['text', 'label'], index=None)
     return pd.concat([new_df, new_df_1])
 
