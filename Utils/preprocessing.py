@@ -57,7 +57,7 @@ def process_sst2_data():
     val_dataset = load_dataset('glue', 'sst2', split='validation')
     text = val_dataset["sentence"]
     labels = val_dataset["label"]
-    with open('../Datasets/SST-2_100_ssmba_test.csv', "w") as csvfile:
+    with open('../Datasets/SST-2_100_ssmba_test.csv', "w", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile, lineterminator='\n')
         i = 0
         for sentence, label in zip(text, labels):

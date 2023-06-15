@@ -5,3 +5,4 @@ transformers==4.16.2
 nlpaug
 nltk
 afinn
+matplotlib

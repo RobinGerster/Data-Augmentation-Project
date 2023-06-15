@@ -162,4 +162,5 @@ cython_debug/
 .vscode
 
 Datasets/ssmba
+Datasets/multinli_1.0
 Datasets/IMDB_500_*_ssmba_train.csv
