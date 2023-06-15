@@ -11,7 +11,7 @@ start_time = time.time()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 assert str(device) == "cuda", "GPU device not available. Training will be sllooowwwww."
 
-dataset = "IMDB"  # Maybe do it for one dataset at a time and save results run again for "MNLI"
+dataset = ["IMDB", "MNLI"]  # Maybe do it for one dataset at a time and save results run again for "MNLI"
 models = ["BERT", "LSTM", "RNN"]
 
 conditions = ["no_bias", "bias"]
