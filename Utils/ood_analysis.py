@@ -1,56 +1,74 @@
-from transformers import AutoTokenizer, AutoModel
-from Utils.classifiers import SequenceBertClassifier
-
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 import torch
+from transformers import DistilBertTokenizerFast, DistilBertModel
 
-import time
-import datetime
+# Load the pre-trained DistilBERT tokenizer and model
+tokenizer = DistilBertTokenizerFast.from_pretrained('distilbert-base-uncased')
+model = DistilBertModel.from_pretrained('distilbert-base-uncased')
 
-# The vector embedding associated to each text is simply the hidden state that Bert outputs for the [CLS] token.
 
-print(f"Current time: {datetime.datetime.now().time()}")
-start_time = time.time()
+def ood_analysis(naug, dataset, bias):
+    df = pd.read_csv(dataset + '_' + bias + '_' + str(naug) + '_ssmba_train.csv', header=None, names=["label", "text"])
 
-device = "cpu"
+    augmented_reviews = df['text'][:-500]
+    original_reviews = df['text'][-500:]
+    augmented_labels = df['label'][:-500]
+    original_labels = df['label'][-500:]
 
-tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-model = AutoModel.from_pretrained("bert-base-uncased").to(device)
+    # Tokenize and encode the text data using DistilBERT tokenizer
+    encoded_data = tokenizer(list(original_reviews) + list(augmented_reviews), truncation=True, padding=True, return_tensors='pt')
+    input_ids = encoded_data['input_ids']
+    attention_mask = encoded_data['attention_mask']
 
-augmented_df = pd.read_csv("../Datasets/IMDB_500_1_ssmba_train.csv", header=None, names=["label", "text"])
-tokenized_augmented = tokenizer(augmented_df["text"].values.tolist(), padding=True, truncation=True, return_tensors="pt")
+    # Generate document embeddings using DistilBERT model
+    with torch.no_grad():
+        outputs = model(input_ids, attention_mask)
+        document_embeddings = outputs.last_hidden_state[:, 0, :].numpy()
 
-original_df = pd.read_csv("../Datasets/IMDB_500.csv", header=None, names=["label", "text"])
-tokenized_original = tokenizer(original_df["text"].values.tolist(), padding=True, truncation=True, return_tensors="pt")
+    # Separate the document embeddings into original and augmented data
+    original_embeddings = document_embeddings[-500:]
+    augmented_embeddings = document_embeddings[:-500]
 
-tokenized_augmented = {k: torch.tensor(v).to(device) for k, v in tokenized_augmented.items()}
-tokenized_original = {k: torch.tensor(v).to(device) for k, v in tokenized_original.items()}
+    # Apply dimensionality reduction with PCA
+    pca = PCA(n_components=2)
+    reduced_data = pca.fit_transform(np.concatenate((original_embeddings, augmented_embeddings), axis=0))
 
-with torch.no_grad():
-  hidden_augmented = model(**tokenized_augmented)
-  hidden_original = model(**tokenized_original)
+    # Separate the reduced data into original and augmented data
+    reduced_original_data = reduced_data[:500]
+    reduced_augmented_data = reduced_data[500:]
 
-embeddings_augmented = hidden_augmented.last_hidden_state[:, 0, :]
-embeddings_original = hidden_original.last_hidden_state[:, 0, :]
+    # Separate the reduced data based on the labels
+    positive_original_data = reduced_original_data[np.array(original_labels) == 1]
+    negative_original_data = reduced_original_data[np.array(original_labels) == 0]
+    positive_augmented_data = reduced_augmented_data[np.array(augmented_labels) == 1]
+    negative_augmented_data = reduced_augmented_data[np.array(augmented_labels) == 0]
 
-print('Execution time:', time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
+    # Plot the reduced original and augmented data with different colors for positive and negative reviews
+    plt.scatter(positive_original_data[:, 0], positive_original_data[:, 1], color='green', label='Original Positive', s=10)
+    plt.scatter(negative_original_data[:, 0], negative_original_data[:, 1], color='red', label='Original Negative', s=10)
+    plt.scatter(positive_augmented_data[:, 0], positive_augmented_data[:, 1], color='lightgreen', label='Augmented Positive', s=10)
+    plt.scatter(negative_augmented_data[:, 0], negative_augmented_data[:, 1], color='salmon', label='Augmented Negative', s=10)
+    if bias == "bias":
+        plt.title(f"OOD generalization on {dataset} biased examples with naug={naug}")
+    else:
+        plt.title(f"OOD generalization on {dataset} naive examples with naug={naug}")
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
 
-# Our model
+    # Move the legend outside the plot
+    plt.legend(bbox_to_anchor=(0.5, 1.28), loc='upper center', ncol=2)
+    plt.savefig(f'../results/ood/{dataset}_{bias}_{naug}', bbox_inches='tight')
 
-# bert = SequenceBertClassifier(device, pretrained_model_name="bert-base-uncased", num_labels=2)
-# tokenizer = bert.tokenizer
-#
-# train_df = pd.read_csv("../Datasets/IMDB_100_ssmba_test.csv", header=None, names=["label", "text"])
-# tokenized_train = tokenizer(train_df["text"].values.tolist(), padding=True, truncation=True, return_tensors="pt")
-#
-# with torch.no_grad():
-#     input_ids = tokenized_train["input_ids"].to(device)
-#     if bert.uses_attention:
-#       attention_mask = tokenized_train["attention_mask"].to(device)
-#       outputs = bert(input_ids, attention_mask=attention_mask)
-#       last_hidden_state_cls = outputs[0][:, 0, :]
-#
-# print('Execution time:', time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
+    plt.tight_layout()  # Adjust plot layout for better display
+    plt.show()
 
-# Extract the vector embeddings
-# train_embeddings = hidden_train.last_hidden_state[:, 0, :]
+
+if __name__ == "__main__":
+    for dataset in ["IMDB", "MNLI"]:
+        for bias in ["no_bias", "bias"]:
+          # , 2, 4, 8, 16, 32
+            for naug in [1]:
+                ood_analysis(naug=naug, dataset=dataset, bias=bias)
