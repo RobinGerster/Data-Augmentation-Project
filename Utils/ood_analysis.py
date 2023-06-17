@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,6 +10,8 @@ from transformers import DistilBertTokenizerFast, DistilBertModel
 # Load the pre-trained DistilBERT tokenizer and model
 tokenizer = DistilBertTokenizerFast.from_pretrained('distilbert-base-uncased')
 model = DistilBertModel.from_pretrained('distilbert-base-uncased')
+
+os.makedirs('../results', exist_ok=True)
 
 
 def ood_analysis(naug, dataset, bias):
@@ -60,7 +64,7 @@ def ood_analysis(naug, dataset, bias):
 
     # Move the legend outside the plot
     plt.legend(bbox_to_anchor=(0.5, 1.28), loc='upper center', ncol=2)
-    plt.savefig(f'../results/ood/{dataset}_{bias}_{naug}', bbox_inches='tight')
+    plt.savefig(f'../results/{dataset}_{bias}_{naug}', bbox_inches='tight')
 
     plt.tight_layout()  # Adjust plot layout for better display
     plt.show()
