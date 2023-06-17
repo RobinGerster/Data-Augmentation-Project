@@ -20,7 +20,7 @@ for i, cond in enumerate(conditions):
         plt.figure(figsize=(10, 6))  # create a new figure for each graph
         for model in models:
             mean_accuracy = [np.mean(results[model][cond][naug][typ]) for naug in naugs]
-            plt.plot(naugs, mean_accuracy, label=model)
+            plt.plot(naugs, mean_accuracy, marker="o", markersize=5, label=model)
 
         plt.xlabel('Number of Augments')
         plt.ylabel('Mean Accuracy')
