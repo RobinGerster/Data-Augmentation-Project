@@ -30,13 +30,13 @@ for i, model in enumerate(models):
             mean_accuracy = [np.mean(results[model][cond][naug][typ]) for naug in naugs]
 
             # Determine the marker type based on the condition
-            marker = 'o' if cond == "no_bias" else 's'
+            marker = 'o' if cond == "no_bias" else 'x'
 
             # Plot data with lines and markers, and label
             c = "Biased"
             if cond == "no_bias":
                 c = "Naive"
-            plt.plot(naugs, mean_accuracy, marker=marker, color=color, label=f'{model} ({c})')
+            plt.plot(naugs, mean_accuracy, marker=marker, color=color, label=f'{model} ({c})', markersize=10)
 
 plt.xlabel('Number of Augments', fontsize=18)
 plt.ylabel('Mean Accuracy', fontsize=18)
